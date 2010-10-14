@@ -37,7 +37,12 @@ class NavigationNode(SimpleAssignmentNodeWithVarAndArgs):
             instance = Page.objects.from_request(instance)
 
         entries = self._what(instance, level, depth)
-
+        #print dir(instance)
+        #toimport=instance.navigation_extension.split('.')
+        #
+        #print "from %s import %s as Nav"% ('.'.join(toimport[:-1]), toimport[-1])
+        #exec("from %s import %s as Nav"% ('.'.join(toimport[:-1]),toimport[-1]))
+        #print Nav.name.__unicode__()
         if args.get('extended', False):
             _entries = list(entries)
             entries = []
