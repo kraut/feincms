@@ -152,15 +152,14 @@ class ApplicationContent(models.Model):
 
         # TODO: Consider changing the input signature to something cleaner, at
         # the cost of a one-time backwards incompatible change
-
         for i in APPLICATIONS:
             if not 2 <= len(i) <= 3:
                 raise ValueError("APPLICATIONS must be provided with tuples containing at least two parameters (urls, name) and an optional extra config dict")
 
-            urls, name = i[0:2]
+            urls, name, template_region_suffix = i[0:3]
 
-            if len(i) == 3:
-                app_conf = i[2]
+            if len(i) == 4:
+                app_conf = i[3]
 
                 if not isinstance(app_conf, dict):
                     raise ValueError("The third parameter of an APPLICATIONS entry must be a dict or the name of one!")
@@ -170,7 +169,8 @@ class ApplicationContent(models.Model):
             cls.ALL_APPS_CONFIG[urls] = {
                 "urls":     urls,
                 "name":     name,
-                "config":   app_conf
+                "config":   app_conf,
+                "template_region_suffix" : template_region_suffix,
             }
 
         cls.add_to_class('urlconf_path',
@@ -258,6 +258,13 @@ class ApplicationContent(models.Model):
             del _local.urlconf
             raise Resolver404
 
+        if  self.ALL_APPS_CONFIG.get(self.urlconf_path, {}).get('template_region_suffix', {}):
+            template= kwargs.get("template_name")
+            if template: 
+                name, ext =template.split( '.')
+                new_name = name +"_"+self.region
+                kwargs["template_name"]= new_name+'.'+ext
+
         #: Variables from the ApplicationContent parameters are added to request
         #  so we can expose them to our templates via the appcontent_parameters
         #  context_processor
@@ -270,6 +277,7 @@ class ApplicationContent(models.Model):
                 view=fn,
                 appcontent_parameters=self.parameters
             )
+
 
         try:
             output = fn(request, *args, **kwargs)
@@ -286,7 +294,7 @@ class ApplicationContent(models.Model):
             if output.status_code == 200:
                 if not getattr(output, 'standalone', False):
                     request._feincms_applicationcontents[self.id] = mark_safe(output.content.decode('utf-8'))
-
+             
             return output
         else:
             request._feincms_applicationcontents[self.id] = mark_safe(output)
