@@ -93,6 +93,7 @@ class MediaFileContent(models.Model):
     def render(self, **kwargs):
         request = kwargs.get('request')
         return render_to_string([
+            'content/mediafile/%s_%s_%s.html' % (self.mediafile.type, self.region, self.position),
             'content/mediafile/%s_%s.html' % (self.mediafile.type, self.position),
             'content/mediafile/%s.html' % self.mediafile.type,
             'content/mediafile/%s.html' % self.position,
