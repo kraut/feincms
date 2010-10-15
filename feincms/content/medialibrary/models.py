@@ -76,12 +76,17 @@ class MediaFileContent(models.Model):
             max_length=10, choices=POSITION_CHOICES,
             default=POSITION_CHOICES[0][0]))
 
+        #cls.add_to_class('size', models.CharField(_('size'), blank=True,
+        #    max_length=10, choices=(('a', 'a'), ('b', 'b'))))
+
         class MediaFileContentAdminForm(ItemEditorForm):
             mediafile = forms.ModelChoiceField(queryset=MEDIAFILE_CLASS.objects.all(),
                 widget=MediaFileWidget, label=_('media file'))
             position = forms.ChoiceField(choices=POSITION_CHOICES,
                 initial=POSITION_CHOICES[0][0], label=_('position'),
                 widget=AdminRadioSelect(attrs={'class': 'radiolist'}))
+            #size = forms.ChoiceField(choices=(('a', 'a'), ('b', 'b')), help_text=_('only for images')) 
+
 
         cls.feincms_item_editor_form = MediaFileContentAdminForm
 

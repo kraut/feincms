@@ -58,7 +58,33 @@ def feincms_render_region(parser, token):
         raise template.TemplateSyntaxError, 'Invalid syntax for feincms_render_region: %s' % token.contents
 
     return RenderRegionNode(feincms_object, region, request)
+class CheckContentType(template.Node):
+    def __init__(self, content, type2proof, var_name):
+        self.content = content
+        self.type2proof = type2proof
+        self.var_name = var_name
 
+    def render(self, context):
+        print context[self.content].__class__.__name__
+        context[self.var_name] =context[self.content].__class__.__name__ == self.type2proof
+        return ''
+import re
+@register.tag
+def is_contenttype(parser, token):
+       # This version uses a regular expression to parse tag contents.
+    try:
+        # Splitting by None == splitting by spaces.
+        tag_name, arg = token.contents.split(None, 1)
+    except ValueError:
+        raise template.TemplateSyntaxError, "%r tag requires arguments" % token.contents.split()[0]
+    m = re.search(r'(\w+) (\w+) as (\w+)', arg)
+    if not m:
+        raise template.TemplateSyntaxError, "%r tag had invalid arguments" % tag_name
+    content, type2proof, var_name = m.groups()
+    print m.groups()
+    print content
+
+    return CheckContentType(content, type2proof, var_name)
 
 class RenderContentNode(template.Node):
     def __init__(self, content, request):
