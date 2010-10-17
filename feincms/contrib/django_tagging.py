@@ -12,7 +12,7 @@ from django.db.models.signals import pre_save
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
-from ..tagging.fields import TagField
+from tagging.fields import TagField
 
 # ------------------------------------------------------------------------
 def taglist_to_string(taglist):
@@ -33,7 +33,7 @@ A variation of the django-tagging TagField which uses a
 SelectMultiple widget instead of free text field.
 
 class MyModel(models.Model):
-    ...
+    .
     tags = TagSelectField(filter_horizontal=True, blank=False)
 
 """
@@ -48,8 +48,8 @@ class TagSelectField(TagField):
         self.filter_horizontal = filter_horizontal
 
     def formfield(self, **defaults):
-        from ..tagging.models import Tag, TaggedItem
-        from ..tagging.utils import parse_tag_input
+        from tagging.models import Tag, TaggedItem
+        from tagging.utils import parse_tag_input
 
         if self.filter_horizontal:
             widget = FilteredSelectMultiple(self.verbose_name, is_stacked=False)
@@ -70,7 +70,7 @@ def pre_save_handler(sender, instance, **kwargs):
     Intercept attempts to save and sort the tag field alphabetically, so
     we won't have different permutations in the filter list.
     """
-    from ..tagging.utils import parse_tag_input
+    from tagging.utils import parse_tag_input
 
     taglist = parse_tag_input(instance.tags)
     instance.tags = taglist_to_string(taglist)
@@ -92,8 +92,8 @@ def tag_model(cls, admin_cls=None, field_name='tags', sort_tags=False, select_fi
     select_field If True, show a multi select instead of the standard
                 CharField for tag entry.
     """
-    from ..tagging.fields import TagField
-    from ..tagging import register as tagging_register
+    from tagging.fields import TagField
+    from tagging import register as tagging_register
 
     cls.add_to_class(field_name, (select_field and TagSelectField or TagField)(field_name.capitalize(), blank=True))
     # use another name for the tag descriptor
@@ -101,8 +101,11 @@ def tag_model(cls, admin_cls=None, field_name='tags', sort_tags=False, select_fi
     tagging_register(cls, tag_descriptor_attr='tagging_' + field_name)
 
     if admin_cls:
-        admin_cls.list_display.append(field_name)
-        admin_cls.list_filter.append(field_name)
+        admin_cls.list_display+=(field_name,)
+        admin_cls.list_filter+=(field_name,)
+        
+        admin_cls.search_fields += ('tags',)
+        admin_cls.show_on_top+=('tags',)
 
     if sort_tags:
         pre_save.connect(pre_save_handler, sender=cls)
