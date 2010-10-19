@@ -7,11 +7,16 @@
 #    from feincms.contrib import tagging
 #    tagging.tag_model(Page)
 # ------------------------------------------------------------------------
+import re
 
 from django.db.models.signals import pre_save
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
-
+from django.conf import settings
+from django.utils.translation import ugettext as _
+from django.utils.safestring import mark_safe
+from django.core.urlresolvers import reverse, NoReverseMatch
+from django.utils.datastructures import MultiValueDict, MergeDict
 from tagging.fields import TagField
 
 # ------------------------------------------------------------------------
@@ -57,7 +62,38 @@ class TagSelectField(TagField):
             widget = forms.SelectMultiple()
         def _render(name, value, attrs=None, *args, **kwargs):
             value = parse_tag_input(value)
-            return type(widget).render(widget, name, value, attrs, *args, **kwargs)
+            output = [type(widget).render(widget, name, value, attrs, *args, **kwargs), ]
+            
+            # add nice add-button.
+            # its not autmatically created because TagField is no Relation!
+            # So I do it manually. Taken from FilteredSelectMultiple.
+            # Maybe its better to simulate an RelationField with Tagfield.
+            name="tags"
+            info = ("tagging", "tag")
+            try:
+                related_url = reverse('admin:%s_%s_add' % info)
+            except NoReverseMatch:
+                info = ('/admin/', 'tagging', 'tag')
+                related_url = '%s%s/%s/add/' % info
+            output.append(u'<a href="%s" class="add-another" id="add_id_%s" onclick="return showAddAnotherPopup(this);"> ' % \
+                                    (related_url, name))
+            output.append(u'<img src="%simg/admin/icon_addlink.gif" width="10" height="10" alt="%s"/></a>' % (settings.ADMIN_MEDIA_PREFIX, _('Add Another')))
+
+            return mark_safe(u''.join(output))
+
+        def _value_from_datadict( data, files, name):
+            # the create pop-up tag returns a tag id
+            # but we need the name
+            def id_to_name(id):
+                if re.match(r"\d+$", id):
+                    return Tag.objects.get(id=data.get(name)).name
+                else:
+                    return id
+            if isinstance(data, (MultiValueDict, MergeDict)):
+                 return [ id_to_name(val) for val in data.getlist(name)]
+            return (id_to_name(data.get(name)), )
+        
+        widget.value_from_datadict = _value_from_datadict
         widget.render = _render
         defaults['widget'] = widget
         choices = [ (str(t), str(t)) for t in Tag.objects.all() ]
