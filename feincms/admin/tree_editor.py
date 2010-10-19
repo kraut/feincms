@@ -167,21 +167,24 @@ class TreeEditor(admin.ModelAdmin):
         Generate a short title for a page, indent it depending on
         the page's depth in the hierarchy.
         """
-        if hasattr(item, 'get_absolute_url'):
+        #there is a issue with items which have multiple bases.
+        # ie.: Category(models.Model, TranslatedObjectMixin)
+        # Thats why i prefer an try ... except.
+        #if hasattr(item, 'get_absolute_url'):
+
+        try: #if there is no get_absolute_url methode.
+             # needed for Models(items) with multiple bases
             r = '''<input type="hidden" class="medialibrary_file_path" value="%s" /><span id="page_marker-%d"
             class="page_marker" style="width: %dpx;">&nbsp;</span>&nbsp;''' % (
                 item.get_absolute_url(), item.id, 14+item.level*18)
-        else:
+        except AttributeError:
             r = '''<span id="page_marker-%d"
             class="page_marker" style="width: %dpx;">&nbsp;</span>&nbsp;''' % (
                 item.id, 14+item.level*18)
-
-#        r += '<span tabindex="0">'
         if hasattr(item, 'short_title'):
             r += item.short_title()
         else:
             r += unicode(item)
-#        r += '</span>'
         return mark_safe(r)
     indented_short_title.short_description = _('title')
     indented_short_title.allow_tags = True
