@@ -82,7 +82,7 @@ class TagSelectField(TagField):
             return mark_safe(u''.join(output))
 
         def _value_from_datadict( data, files, name):
-            # the create pop-up tag returns a tag id
+            # the create tag pop-up returns a tag id
             # but we need the name
             def id_to_name(id):
                 if re.match(r"\d+$", id):
