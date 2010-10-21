@@ -67,7 +67,7 @@ class TagSelectField(TagField):
             # add nice add-button.
             # its not autmatically created because TagField is no Relation!
             # So I do it manually. Taken from FilteredSelectMultiple.
-            # Maybe its better to simulate an RelationField with Tagfield.
+            # Maybe its better to simulate an RelationField with TagField.
             name="tags"
             info = ("tagging", "tag")
             try:
@@ -84,9 +84,14 @@ class TagSelectField(TagField):
         def _value_from_datadict( data, files, name):
             # the create tag pop-up returns a tag id
             # but we need the name
+            # WARNING: This is a dirty hack!
+            #          If you use a number for tag.name,
+            #          this will not work.
+            print "DATA"
+            print data.get(name)
             def id_to_name(id):
                 if re.match(r"\d+$", id):
-                    return Tag.objects.get(id=data.get(name)).name
+                    return Tag.objects.get(id=id).name
                 else:
                     return id
             if isinstance(data, (MultiValueDict, MergeDict)):
@@ -130,7 +135,6 @@ def tag_model(cls, admin_cls=None, field_name='tags', sort_tags=False, select_fi
     """
     from tagging.fields import TagField
     from tagging import register as tagging_register
-
     cls.add_to_class(field_name, (select_field and TagSelectField or TagField)(field_name.capitalize(), blank=True))
     # use another name for the tag descriptor
     # See http://code.google.com/p/django-tagging/issues/detail?id=95 for the reason why
