@@ -306,3 +306,14 @@ def is_sibling_of(page1, page2):
         return False
 
 # ------------------------------------------------------------------------
+@register.filter
+def render_first(contents, type):
+    for c in contents:
+        if c.__class__.__name__.lower() == type:
+            return c.render()
+
+@register.filter
+def get_first_mediafile_url(contents):
+    for c in contents:
+        if c.__class__.__name__.lower() == "mediafilecontent":
+            return c.mediafile.get_absolute_url()

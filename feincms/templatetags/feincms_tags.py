@@ -137,3 +137,7 @@ def feincms_frontend_editing(cms_obj, request):
         return render_to_string('admin/feincms/fe_tools.html', context)
 
     return u''
+import urllib
+@register.filter
+def quote_url(url):
+    return urllib.quote_plus(url)
