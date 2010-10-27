@@ -140,4 +140,4 @@ def feincms_frontend_editing(cms_obj, request):
 import urllib
 @register.filter
 def quote_url(url):
-    return urllib.quote_plus(url)
+    return urllib.quote_plus(url.encode('utf8'))
