@@ -38,7 +38,7 @@ class MediaFileWidget(forms.TextInput):
 
             return mark_safe(u"""
                 <div style="margin-left:10em">%(image)s
-                <a href="%(url)s" target="_blank">%(caption)s - %(url)s</a><br />
+                <a href="%(url)s" target="_blank" rel="facebox">%(caption)s - %(url)s</a><br />
                 %(inputfield)s
                 </div>""" % {
                     'image': image,
