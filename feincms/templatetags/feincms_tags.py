@@ -65,7 +65,7 @@ class CheckContentType(template.Node):
         self.var_name = var_name
 
     def render(self, context):
-        print context[self.content].__class__.__name__
+        #print context[self.content].__class__.__name__
         context[self.var_name] =context[self.content].__class__.__name__ == self.type2proof
         return ''
 import re
@@ -81,8 +81,8 @@ def is_contenttype(parser, token):
     if not m:
         raise template.TemplateSyntaxError, "%r tag had invalid arguments" % tag_name
     content, type2proof, var_name = m.groups()
-    print m.groups()
-    print content
+    #print m.groups()
+    #print content
 
     return CheckContentType(content, type2proof, var_name)
 
